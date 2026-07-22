@@ -1,13 +1,13 @@
 import { authService } from './authService';
 
-const API_BASE_URL = 'http://localhost:5000/api/users';
+const ADMIN_API_BASE_URL = 'http://localhost:5000/api/admin/users';
 
 export const userService = {
   // Fetch list of users for administration
   getUsers: async () => {
     const token = authService.getToken();
     try {
-      const response = await fetch(API_BASE_URL, {
+      const response = await fetch(ADMIN_API_BASE_URL, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -56,12 +56,12 @@ export const userService = {
     }
   },
 
-  // Update specific user role via API endpoint
+  // Update specific user role via PATCH /admin/users/:id/role API endpoint
   updateUserRole: async (userId, newRole) => {
     const token = authService.getToken();
     try {
-      const response = await fetch(`${API_BASE_URL}/${userId}/role`, {
-        method: 'PUT',
+      const response = await fetch(`${ADMIN_API_BASE_URL}/${userId}/role`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
