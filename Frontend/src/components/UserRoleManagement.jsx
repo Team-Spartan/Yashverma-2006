@@ -20,17 +20,20 @@ export default function UserRoleManagement() {
   // Fetch registered user list
   const loadUsers = async () => {
     setLoadingUsers(true);
+    setNotification(null);
     try {
       const data = await userService.getUsers();
       setUsers(data);
-      // Initialize selected role dropdown state
       const roleMap = {};
       data.forEach((u) => {
         roleMap[u._id || u.id] = u.role;
       });
       setSelectedRoles(roleMap);
     } catch (err) {
-      console.error('Failed to load user list:', err);
+      setNotification({
+        type: 'error',
+        message: err.message || 'Failed to load user directory'
+      });
     } finally {
       setLoadingUsers(false);
     }
@@ -48,26 +51,29 @@ export default function UserRoleManagement() {
     }));
   };
 
-  // Submit role update & refresh UI state immediately
+  // Perform Optimistic UI Update with automatic rollback on error
   const handleSaveRole = async (user) => {
     const userId = user._id || user.id;
+    const previousRole = user.role;
     const newRole = selectedRoles[userId];
 
-    if (newRole === user.role) return;
+    if (newRole === previousRole) return;
 
     setUpdatingId(userId);
     setNotification(null);
 
+    // 1. OPTIMISTIC UPDATE: Update UI state immediately before API completes
+    setUsers((prevUsers) =>
+      prevUsers.map((u) =>
+        (u._id || u.id) === userId ? { ...u, role: newRole } : u
+      )
+    );
+
     try {
+      // 2. Call backend API endpoint (PATCH /admin/users/:id/role)
       await userService.updateUserRole(userId, newRole);
 
-      // Immediately update local UI state to reflect new role
-      setUsers((prevUsers) =>
-        prevUsers.map((u) =>
-          (u._id || u.id) === userId ? { ...u, role: newRole } : u
-        )
-      );
-
+      // 3. SUCCESS FEEDBACK
       setNotification({
         type: 'success',
         message: `Role for ${user.name} updated to ${newRole.replace('_', ' ')} successfully!`
@@ -75,9 +81,24 @@ export default function UserRoleManagement() {
 
       setTimeout(() => setNotification(null), 4000);
     } catch (err) {
+      console.error('Role update failed, rolling back optimistic change:', err.message);
+
+      // 4. ROLLBACK OPTIMISTIC UPDATE on error
+      setUsers((prevUsers) =>
+        prevUsers.map((u) =>
+          (u._id || u.id) === userId ? { ...u, role: previousRole } : u
+        )
+      );
+
+      setSelectedRoles((prev) => ({
+        ...prev,
+        [userId]: previousRole
+      }));
+
+      // 5. ERROR FEEDBACK
       setNotification({
         type: 'error',
-        message: err.message || 'Failed to update user role'
+        message: `Error updating role: ${err.message || 'Server error'}. Reverted to ${previousRole.replace('_', ' ')}.`
       });
     } finally {
       setUpdatingId(null);
@@ -104,7 +125,7 @@ export default function UserRoleManagement() {
       </div>
 
       {notification && (
-        <div className={`role-alert ${notification.type}`}>
+        <div className={`role-alert ${notification.type}`} role="status">
           {notification.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
           <span>{notification.message}</span>
         </div>
