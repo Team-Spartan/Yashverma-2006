@@ -8,6 +8,7 @@ var cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRouter = require("./routes/authRoutes");
+const userRouter = require("./routes/userRoutes");
 const studentsRouter = require("./routes/students");
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Route Mounts
 app.use("/api/auth", authRouter);
+app.use("/api/users", userRouter);
 app.use("/students", studentsRouter);
 
 app.use(function (req, res, next) {

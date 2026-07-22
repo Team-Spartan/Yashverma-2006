@@ -1,10 +1,11 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Droplets, LogOut, ShieldCheck, Activity, AlertTriangle, UserCheck, MapPin } from 'lucide-react';
+import { Droplets, LogOut, ShieldCheck, Activity, AlertTriangle } from 'lucide-react';
+import UserRoleManagement from './UserRoleManagement';
 import './Dashboard.css';
 
 export default function Dashboard() {
-  const { user, token, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <div className="dashboard-container">
@@ -90,6 +91,9 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* User Role Management Panel */}
+        <UserRoleManagement />
       </main>
     </div>
   );
