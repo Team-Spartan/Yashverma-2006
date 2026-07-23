@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 // Middleware to protect routes by verifying JWT in Authorization header
-exports.protect = async (req, res, next) => {
+const protect = async (req, res, next) => {
   let token;
 
   if (
@@ -48,8 +48,8 @@ exports.protect = async (req, res, next) => {
 };
 
 // Grant access to specific roles
-exports.authorize = (...roles) => {
-  return (req, res, next) => {
+const authorize = (...roles) => {
+  return function authorizeMiddleware(req, res, next) {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
@@ -58,4 +58,9 @@ exports.authorize = (...roles) => {
     }
     next();
   };
+};
+
+module.exports = {
+  protect,
+  authorize
 };

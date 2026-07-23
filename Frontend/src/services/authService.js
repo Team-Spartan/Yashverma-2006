@@ -17,7 +17,7 @@ export const authService = {
     const userStr = localStorage.getItem('jal_suraksha_user');
     try {
       return userStr ? JSON.parse(userStr) : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   },
@@ -42,36 +42,32 @@ export const authService = {
         return false;
       }
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   },
 
   // Authenticate user via API
   login: async (email, password) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed. Please check credentials.');
-      }
-
-      if (data.token) {
-        authService.setSession(data.token, data.user);
-      }
-
-      return data;
-    } catch (error) {
-      throw error;
+    if (!response.ok) {
+      throw new Error(data.message || 'Login failed. Please check credentials.');
     }
+
+    if (data.token) {
+      authService.setSession(data.token, data.user);
+    }
+
+    return data;
   },
 
   // Verify current session with backend protected route
@@ -94,7 +90,7 @@ export const authService = {
 
       const data = await response.json();
       return data.user;
-    } catch (e) {
+    } catch {
       return null;
     }
   }

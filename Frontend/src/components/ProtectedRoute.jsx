@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ShieldAlert, Lock } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 
 export default function ProtectedRoute({ children, fallbackView }) {
   const { isAuthenticated, isLoading } = useAuth();

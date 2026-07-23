@@ -181,3 +181,9 @@
   border: 1px solid rgba(16, 185, 129, 0.3);
   color: #a7f3d0;
 }
+
+.role-alert.error {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fecdd3;
+}
