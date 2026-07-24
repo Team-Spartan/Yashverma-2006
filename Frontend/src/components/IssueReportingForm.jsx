@@ -11,7 +11,8 @@ import {
   X,
   Droplet,
   Info,
-  AlertCircle
+  AlertCircle,
+  RotateCcw
 } from 'lucide-react';
 import './IssueReportingForm.css';
 
@@ -217,6 +218,19 @@ export default function IssueReportingForm({ onIssueCreated }) {
     }
   };
 
+  // Reset form inputs and clear validation errors
+  const handleReset = () => {
+    setFormData({
+      location: '',
+      description: '',
+      severity: 'Medium',
+      issueType: ISSUE_TYPES[0]
+    });
+    setErrors({});
+    setTouched({});
+    setNotification(null);
+  };
+
   return (
     <div className="issue-form-card">
       <div className="issue-form-header">
@@ -393,8 +407,18 @@ export default function IssueReportingForm({ onIssueCreated }) {
           </span>
         </div>
 
-        {/* Submit Button */}
+        {/* Form Action Buttons (Submit & Reset) */}
         <div className="form-actions">
+          <button
+            type="button"
+            className="reset-report-btn"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            title="Clear all fields"
+          >
+            <RotateCcw size={16} />
+            <span>Reset Form</span>
+          </button>
           <button
             type="submit"
             className="submit-report-btn"

@@ -401,11 +401,40 @@
   color: #e2e8f0;
 }
 
-/* Submit Action Button */
+/* Submit & Reset Action Buttons */
 .form-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 0.75rem;
   margin-top: 0.5rem;
+}
+
+.reset-report-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.35rem;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-report-btn:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.9);
+  color: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.5);
+}
+
+.reset-report-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .submit-report-btn {
@@ -446,7 +475,13 @@
     grid-template-columns: 1fr;
   }
 
-  .submit-report-btn {
+  .form-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .submit-report-btn,
+  .reset-report-btn {
     width: 100%;
   }
 }
