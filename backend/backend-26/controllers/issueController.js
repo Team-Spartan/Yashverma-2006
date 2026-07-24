@@ -128,7 +128,56 @@ const getIssues = async (req, res) => {
   }
 };
 
+// @desc    Delete a water quality issue report by ID
+// @route   DELETE /api/issues/:id
+// @access  Public / Protected
+const deleteIssue = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Log ID parameter is required."
+      });
+    }
+
+    if (mongoose.connection.readyState === 1) {
+      const deleted = await Issue.findByIdAndDelete(id);
+      if (!deleted) {
+        return res.status(404).json({
+          success: false,
+          message: "Water quality test log not found."
+        });
+      }
+    } else {
+      // In-memory fallback removal
+      const index = inMemoryIssues.findIndex((i) => i._id === id || i.id === id);
+      if (index === -1) {
+        return res.status(404).json({
+          success: false,
+          message: "Water quality test log not found."
+        });
+      }
+      inMemoryIssues.splice(index, 1);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Water quality test log deleted successfully!",
+      deletedId: id
+    });
+  } catch (error) {
+    console.error("Error deleting issue:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete water quality test log."
+    });
+  }
+};
+
 module.exports = {
   createIssue,
-  getIssues
+  getIssues,
+  deleteIssue
 };

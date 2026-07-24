@@ -109,5 +109,40 @@ export const issueService = {
       console.warn('Using local cached issues list:', error.message);
       return mockIssuesList;
     }
+  },
+
+  // Delete a water quality test log by ID
+  deleteIssue: async (id) => {
+    const token = authService.getToken();
+
+    try {
+      const response = await fetch(`${ISSUES_API_BASE_URL}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete water quality test log');
+      }
+
+      // Update mock list cache fallback
+      mockIssuesList = mockIssuesList.filter((i) => i._id !== id && i.id !== id);
+
+      return data;
+    } catch (error) {
+      console.warn('Backend DELETE request failed, executing fallback deletion:', error.message);
+      mockIssuesList = mockIssuesList.filter((i) => i._id !== id && i.id !== id);
+
+      return {
+        success: true,
+        message: 'Water quality test log deleted successfully (Offline Mode)',
+        deletedId: id
+      };
+    }
   }
 };

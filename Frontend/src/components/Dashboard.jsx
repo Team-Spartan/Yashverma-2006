@@ -42,6 +42,11 @@ export default function Dashboard() {
     setActiveTab('reports');
   };
 
+  // Callback when an issue is deleted
+  const handleIssueDeleted = (deletedId) => {
+    setIssues((prev) => prev.filter((i) => (i._id || i.id) !== deletedId));
+  };
+
   return (
     <div className="dashboard-container">
       {/* Protected Header Navigation */}
@@ -128,13 +133,21 @@ export default function Dashboard() {
         {activeTab === 'report-form' && (
           <div>
             <IssueReportingForm onIssueCreated={handleIssueCreated} />
-            <IssueList issues={issues} loading={loadingIssues} />
+            <IssueList
+              issues={issues}
+              loading={loadingIssues}
+              onIssueDeleted={handleIssueDeleted}
+            />
           </div>
         )}
 
         {/* Tab 2: Issue List Feed */}
         {activeTab === 'reports' && (
-          <IssueList issues={issues} loading={loadingIssues} />
+          <IssueList
+            issues={issues}
+            loading={loadingIssues}
+            onIssueDeleted={handleIssueDeleted}
+          />
         )}
 
         {/* Tab 3: User Role Management Panel */}
