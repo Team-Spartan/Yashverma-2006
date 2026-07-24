@@ -1,11 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Droplets, LogOut, ShieldCheck, Activity, AlertTriangle } from 'lucide-react';
+import { Droplets, LogOut, ShieldCheck, PlusCircle, ListFilter, Users } from 'lucide-react';
 import UserRoleManagement from './UserRoleManagement';
+import IssueReportingForm from './IssueReportingForm';
+import IssueList from './IssueList';
+import StatsWidget from './StatsWidget';
+import { issueService } from '../services/issueService';
 import './Dashboard.css';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
+
+  // Tab navigation state: 'report-form' | 'stats' | 'reports' | 'user-roles'
+  const [activeTab, setActiveTab] = useState('report-form');
+
+  // Issues state
+  const [issues, setIssues] = useState([]);
+  const [loadingIssues, setLoadingIssues] = useState(true);
+
+  // Fetch initial issues list
+  const loadIssues = async () => {
+    setLoadingIssues(true);
+    try {
+      const data = await issueService.getIssues();
+      setIssues(data);
+    } catch (err) {
+      console.error('Failed to load issues:', err);
+    } finally {
+      setLoadingIssues(false);
+    }
+  };
+
+  useEffect(() => {
+    loadIssues();
+  }, []);
+
+  // Callback when a new issue is reported via form
+  const handleIssueCreated = (newIssue) => {
+    setIssues((prev) => [newIssue, ...prev]);
+    // Switch tab to view the live list feed
+    setActiveTab('reports');
+  };
 
   return (
     <div className="dashboard-container">
@@ -36,7 +71,7 @@ export default function Dashboard() {
         <div className="dashboard-header">
           <h1 className="dashboard-title">Rural Water Quality Monitoring</h1>
           <p className="dashboard-subtitle">
-            Welcome back! Real-time water test logs, contamination alerts, and community reports.
+            Welcome back! Real-time water test logs, contamination alerts, summary statistics, and community reports.
           </p>
         </div>
 
@@ -59,41 +94,53 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Monitoring Overview Metrics */}
-        <div className="metrics-grid">
-          <div className="metric-card">
-            <div className="metric-icon water">
-              <Droplets size={24} />
-            </div>
-            <div>
-              <div className="metric-label">Water Quality Index</div>
-              <div className="metric-val" style={{ color: '#38bdf8' }}>92 / 100</div>
-            </div>
-          </div>
+        {/* Primary Statistics Widget Component displaying summary values */}
+        <StatsWidget issues={issues} onRefresh={loadIssues} />
 
-          <div className="metric-card">
-            <div className="metric-icon ph">
-              <Activity size={24} />
-            </div>
-            <div>
-              <div className="metric-label">Average pH Level</div>
-              <div className="metric-val" style={{ color: '#10b981' }}>7.2 pH (Optimal)</div>
-            </div>
-          </div>
+        {/* Section Navigation Tabs */}
+        <div className="dashboard-tabs">
+          <button
+            className={`tab-btn ${activeTab === 'report-form' ? 'active' : ''}`}
+            onClick={() => setActiveTab('report-form')}
+          >
+            <PlusCircle size={18} />
+            <span>Report Water Issue</span>
+          </button>
 
-          <div className="metric-card">
-            <div className="metric-icon alerts">
-              <AlertTriangle size={24} />
-            </div>
-            <div>
-              <div className="metric-label">Active Contamination Alerts</div>
-              <div className="metric-val" style={{ color: '#f59e0b' }}>0 Pending</div>
-            </div>
-          </div>
+          <button
+            className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reports')}
+          >
+            <ListFilter size={18} />
+            <span>View All Reports ({issues.length})</span>
+          </button>
+
+          <button
+            className={`tab-btn ${activeTab === 'user-roles' ? 'active' : ''}`}
+            onClick={() => setActiveTab('user-roles')}
+          >
+            <Users size={18} />
+            <span>User Role Management</span>
+          </button>
         </div>
 
-        {/* User Role Management Panel */}
-        <UserRoleManagement />
+        {/* Tab 1: Issue Reporting Form */}
+        {activeTab === 'report-form' && (
+          <div>
+            <IssueReportingForm onIssueCreated={handleIssueCreated} />
+            <IssueList issues={issues} loading={loadingIssues} />
+          </div>
+        )}
+
+        {/* Tab 2: Issue List Feed */}
+        {activeTab === 'reports' && (
+          <IssueList issues={issues} loading={loadingIssues} />
+        )}
+
+        {/* Tab 3: User Role Management Panel */}
+        {activeTab === 'user-roles' && (
+          <UserRoleManagement />
+        )}
       </main>
     </div>
   );
