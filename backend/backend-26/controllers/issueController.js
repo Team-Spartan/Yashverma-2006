@@ -142,17 +142,23 @@ const deleteIssue = async (req, res) => {
       });
     }
 
-    if (mongoose.connection.readyState === 1) {
+    if (mongoose.connection.readyState === 1 && mongoose.Types.ObjectId.isValid(id)) {
       const deleted = await Issue.findByIdAndDelete(id);
       if (!deleted) {
-        return res.status(404).json({
-          success: false,
-          message: "Water quality test log not found."
-        });
+        // Fallback check in memory if not in DB
+        const index = inMemoryIssues.findIndex((i) => String(i._id) === String(id) || String(i.id) === String(id));
+        if (index !== -1) {
+          inMemoryIssues.splice(index, 1);
+        } else {
+          return res.status(404).json({
+            success: false,
+            message: "Water quality test log not found."
+          });
+        }
       }
     } else {
       // In-memory fallback removal
-      const index = inMemoryIssues.findIndex((i) => i._id === id || i.id === id);
+      const index = inMemoryIssues.findIndex((i) => String(i._id) === String(id) || String(i.id) === String(id));
       if (index === -1) {
         return res.status(404).json({
           success: false,

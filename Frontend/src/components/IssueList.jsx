@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AlertTriangle,
   MapPin,
@@ -21,6 +21,17 @@ export default function IssueList({ issues, loading, onIssueDeleted }) {
 
   // Feedback notification banner state
   const [notification, setNotification] = useState(null);
+
+  // Close modal on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && logToDelete && !isDeleting) {
+        setLogToDelete(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [logToDelete, isDeleting]);
 
   if (loading) {
     return (
@@ -200,13 +211,25 @@ export default function IssueList({ issues, loading, onIssueDeleted }) {
 
       {/* Deletion Confirmation Modal Overlay */}
       {logToDelete && (
-        <div className="confirm-modal-overlay" role="dialog" aria-modal="true">
+        <div
+          className="confirm-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title-confirm-delete"
+          onClick={(e) => {
+            if (e.target.classList.contains('confirm-modal-overlay') && !isDeleting) {
+              setLogToDelete(null);
+            }
+          }}
+        >
           <div className="confirm-modal-box">
             <div className="modal-header-danger">
               <div className="danger-icon-wrapper">
                 <AlertTriangle size={24} color="#ef4444" />
               </div>
-              <h4 className="modal-title">Confirm Log Removal</h4>
+              <h4 id="modal-title-confirm-delete" className="modal-title">
+                Confirm Log Removal
+              </h4>
             </div>
 
             <div className="modal-body">
