@@ -34,8 +34,17 @@ export const authService = {
     if (!token) return false;
     
     try {
-      // Basic JWT expiration check if JWT contains exp
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Base64URL safe decoding of JWT payload
+      const base64Url = token.split('.')[1];
+      if (!base64Url) return false;
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonPayload);
       if (payload.exp && payload.exp * 1000 < Date.now()) {
         localStorage.removeItem('jal_suraksha_token');
         localStorage.removeItem('jal_suraksha_user');
@@ -84,14 +93,19 @@ export const authService = {
       });
 
       if (!response.ok) {
-        authService.clearSession();
-        return null;
+        if (response.status === 401 || response.status === 403) {
+          authService.clearSession();
+          return null;
+        }
+      } else {
+        const data = await response.json();
+        return data.user;
       }
 
-      const data = await response.json();
-      return data.user;
+      return authService.getUser();
     } catch {
-      return null;
+      // Fallback to cached user profile if server is unavailable locally
+      return authService.getUser();
     }
   }
 };

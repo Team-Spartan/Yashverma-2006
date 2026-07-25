@@ -254,6 +254,32 @@ export default function LoginForm({ onLoginSubmit, serverError, isLoading }) {
           </button>
         </form>
 
+        <div className="demo-credentials">
+          <span className="demo-title">Quick Demo Login:</span>
+          <div className="demo-buttons">
+            <button
+              type="button"
+              className="demo-btn"
+              onClick={() => {
+                setFormData((prev) => ({ ...prev, email: 'sunita@village.org', password: 'password123' }));
+                setErrors({ email: '', password: '' });
+              }}
+            >
+              Health Worker
+            </button>
+            <button
+              type="button"
+              className="demo-btn"
+              onClick={() => {
+                setFormData((prev) => ({ ...prev, email: 'admin@jal.gov.in', password: 'adminpassword' }));
+                setErrors({ email: '', password: '' });
+              }}
+            >
+              Portal Admin
+            </button>
+          </div>
+        </div>
+
         <div className="login-footer">
           <p>Rural Water Quality Monitoring & Response Platform</p>
         </div>
