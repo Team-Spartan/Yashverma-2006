@@ -75,6 +75,20 @@ export default function StatsWidget({ issues = [], onRefresh }) {
     return waterQualityService.calculateStats(filteredReadings, selectedParamId);
   }, [filteredReadings, selectedParamId]);
 
+  // Compute dynamic positions for the Min - Avg - Max distribution gauge
+  const gaugePositions = useMemo(() => {
+    const { min, max, avg, count } = paramStats;
+    if (!count || min === max) {
+      return { minPos: 15, avgPos: 50, maxPos: 85 };
+    }
+    const minPos = 12;
+    const maxPos = 88;
+    const range = max - min;
+    const rawAvgPos = Math.round(minPos + ((avg - min) / range) * (maxPos - minPos));
+    const avgPos = Math.min(84, Math.max(16, rawAvgPos));
+    return { minPos, avgPos, maxPos };
+  }, [paramStats]);
+
   // 3. Filter Reported Issues by Time Range for secondary issue metrics
   const filteredIssues = useMemo(() => {
     if (!issues || issues.length === 0) return [];
@@ -330,15 +344,15 @@ export default function StatsWidget({ issues = [], onRefresh }) {
           <span className="range-gauge-subtitle">Safe Range Boundary: {selectedParamDef.minSafe} – {selectedParamDef.maxSafe} {selectedParamDef.unit}</span>
         </div>
         <div className="range-gauge-bar-track">
-          <div className="gauge-marker min" style={{ left: '15%' }}>
+          <div className="gauge-marker min" style={{ left: `${gaugePositions.minPos}%` }}>
             <span className="marker-pin"></span>
             <span className="marker-label">Min: {paramStats.min}</span>
           </div>
-          <div className="gauge-marker avg" style={{ left: '50%' }}>
+          <div className="gauge-marker avg" style={{ left: `${gaugePositions.avgPos}%` }}>
             <span className="marker-pin"></span>
             <span className="marker-label">Avg: {paramStats.avg}</span>
           </div>
-          <div className="gauge-marker max" style={{ left: '85%' }}>
+          <div className="gauge-marker max" style={{ left: `${gaugePositions.maxPos}%` }}>
             <span className="marker-pin"></span>
             <span className="marker-label">Max: {paramStats.max}</span>
           </div>
