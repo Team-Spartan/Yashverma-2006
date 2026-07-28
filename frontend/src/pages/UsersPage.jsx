@@ -17,24 +17,17 @@ export default function UsersPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Applied parameters triggering request
-  const [appliedFilters, setAppliedFilters] = useState({
-    search: '',
-    role: '',
-    page: 1
-  });
-
   const loadUsers = async () => {
     setLoading(true);
     setError(null);
     try {
       const params = {
         limit,
-        page: appliedFilters.page
+        page
       };
 
-      if (appliedFilters.search) params.search = appliedFilters.search;
-      if (appliedFilters.role) params.role = appliedFilters.role;
+      if (searchInput.trim()) params.search = searchInput.trim();
+      if (roleFilter) params.role = roleFilter;
 
       const response = await fetchUsers(params);
 
@@ -42,7 +35,6 @@ export default function UsersPage() {
         setUsers(response.data || []);
         setTotalCount(response.total || 0);
         setTotalPages(response.pages || 1);
-        setPage(response.page || 1);
       } else {
         throw new Error('Failed to retrieve user accounts');
       }
@@ -56,33 +48,32 @@ export default function UsersPage() {
 
   useEffect(() => {
     loadUsers();
-  }, [appliedFilters]);
+  }, [searchInput, roleFilter, page]);
 
-  const handleSearchSubmit = (e) => {
+  const handleFormSubmit = (e) => {
     e?.preventDefault();
-    setAppliedFilters({
-      search: searchInput.trim(),
-      role: roleFilter,
-      page: 1
-    });
+    loadUsers();
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchInput(e.target.value);
+    setPage(1);
+  };
+
+  const handleRoleChange = (e) => {
+    setRoleFilter(e.target.value);
+    setPage(1);
   };
 
   const handleClearFilters = () => {
     setSearchInput('');
     setRoleFilter('');
-    setAppliedFilters({
-      search: '',
-      role: '',
-      page: 1
-    });
+    setPage(1);
   };
 
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > totalPages) return;
-    setAppliedFilters(prev => ({
-      ...prev,
-      page: newPage
-    }));
+    setPage(newPage);
   };
 
   // Helper to format roles
@@ -144,7 +135,7 @@ export default function UsersPage() {
       )}
 
       {/* Filter / Search bar */}
-      <form onSubmit={handleSearchSubmit} className="glass-card" style={{ marginBottom: '1.5rem', padding: '1.25rem' }}>
+      <form onSubmit={handleFormSubmit} className="glass-card" style={{ marginBottom: '1.5rem', padding: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
           <Search size={18} style={{ color: 'var(--accent-cyan)' }} />
           <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Search Registered Users</h2>
@@ -159,7 +150,7 @@ export default function UsersPage() {
               placeholder="Search by name, email..."
               className="form-input"
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              onChange={handleSearchChange}
               style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
             />
           </div>
@@ -170,7 +161,7 @@ export default function UsersPage() {
             <select
               className="form-input"
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
+              onChange={handleRoleChange}
               style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem', background: 'var(--bg-dark)' }}
             >
               <option value="">All Roles</option>
