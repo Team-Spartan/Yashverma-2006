@@ -14,14 +14,14 @@ export default function ContaminationChart({ trends = [] }) {
 
   const parameterConfigs = {
     ph: {
-      name: 'pH Level',
+      name: 'pH',
       label: 'pH Level (Safe Range 6.5 - 8.5)',
       dataKey: (item) => item.parameters?.ph || 7,
       borderColor: '#4cc9f0',
       backgroundColor: 'rgba(76, 201, 240, 0.15)'
     },
     turbidity: {
-      name: 'Turbidity (NTU)',
+      name: 'Turbidity',
       label: 'Turbidity (NTU)',
       dataKey: (item) => item.parameters?.turbidity || 1,
       borderColor: '#f59e0b',
@@ -35,7 +35,7 @@ export default function ContaminationChart({ trends = [] }) {
       backgroundColor: 'rgba(52, 211, 153, 0.15)'
     },
     tds: {
-      name: 'TDS (mg/L)',
+      name: 'TDS',
       label: 'TDS (mg/L)',
       dataKey: (item) => item.parameters?.tds || 250,
       borderColor: '#a855f7',
@@ -119,22 +119,20 @@ export default function ContaminationChart({ trends = [] }) {
             const isOnlyOneSelected = Object.values(selectedParams).filter(Boolean).length === 1;
 
             return (
-              <label 
+              <div 
                 key={key} 
                 style={{ 
                   display: 'inline-flex', 
                   alignItems: 'center', 
-                  gap: '0.5rem', 
-                  cursor: isSelected && isOnlyOneSelected ? 'not-allowed' : 'pointer',
-                  userSelect: 'none',
-                  fontSize: '0.9rem',
-                  color: isSelected ? 'var(--text-main)' : 'var(--text-muted)',
-                  fontWeight: isSelected ? 600 : 400
+                  gap: '0.5rem',
+                  userSelect: 'none'
                 }}
               >
                 <input
                   type="checkbox"
                   id={`param-check-${key}`}
+                  name={key}
+                  value={key}
                   checked={isSelected}
                   onChange={() => handleCheckboxChange(key)}
                   disabled={isSelected && isOnlyOneSelected}
@@ -145,8 +143,18 @@ export default function ContaminationChart({ trends = [] }) {
                     cursor: isSelected && isOnlyOneSelected ? 'not-allowed' : 'pointer'
                   }}
                 />
-                {config.name}
-              </label>
+                <label 
+                  htmlFor={`param-check-${key}`}
+                  style={{ 
+                    cursor: isSelected && isOnlyOneSelected ? 'not-allowed' : 'pointer',
+                    fontSize: '0.9rem',
+                    color: isSelected ? 'var(--text-main)' : 'var(--text-muted)',
+                    fontWeight: isSelected ? 600 : 400
+                  }}
+                >
+                  {config.name}
+                </label>
+              </div>
             );
           })}
         </div>
