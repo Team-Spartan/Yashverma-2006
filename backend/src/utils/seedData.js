@@ -4,6 +4,7 @@ const User = require('../models/User');
 const WaterSource = require('../models/WaterSource');
 const WaterTestLog = require('../models/WaterTestLog');
 const IssueReport = require('../models/IssueReport');
+const AuditLog = require('../models/AuditLog');
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ const seedData = async () => {
     await WaterSource.deleteMany();
     await WaterTestLog.deleteMany();
     await IssueReport.deleteMany();
+    await AuditLog.deleteMany();
 
     // Create sample users
     const repUser = await User.create({
@@ -103,6 +105,38 @@ const seedData = async () => {
       description: 'Water coming out reddish yellow with bad odor from East School Tank.',
       status: 'open'
     });
+
+    // Create sample audit logs
+    await AuditLog.create([
+      {
+        action: 'EDIT',
+        performedBy: healthWorker._id,
+        targetType: 'WaterTestLog',
+        targetId: new mongoose.Types.ObjectId(),
+        villageName: 'Rampur',
+        waterSourceName: 'Panchayat Bhavan Handpump #01',
+        changes: {
+          before: { ph: 7.2, turbidity: 1.5, tds: 310, dissolvedOxygen: 5.5, nitrates: 5, fluoride: 0.8, eColiPresent: false },
+          after: { ph: 7.4, turbidity: 1.2, tds: 320, dissolvedOxygen: 5.5, nitrates: 5, fluoride: 0.8, eColiPresent: false }
+        },
+        description: 'Edited parameters: pH (7.2 -> 7.4), Turbidity (1.5 -> 1.2), TDS (310 -> 320)',
+        timestamp: new Date(Date.now() - 3600000)
+      },
+      {
+        action: 'DELETE',
+        performedBy: adminUser._id,
+        targetType: 'WaterTestLog',
+        targetId: new mongoose.Types.ObjectId(),
+        villageName: 'Rampur',
+        waterSourceName: 'East School Overhead Tank',
+        changes: {
+          before: { ph: 8.9, turbidity: 6.8, tds: 950, dissolvedOxygen: 3.2, nitrates: 15, fluoride: 1.8, eColiPresent: true, calculatedWQI: 28, qualityStatus: 'Critical', remarks: 'Smells putrid.' },
+          after: null
+        },
+        description: 'Deleted water quality entry (WQI: 28, Status: Critical)',
+        timestamp: new Date(Date.now() - 7200000)
+      }
+    ]);
 
     console.log('[Seed] Database successfully populated with initial sample data!');
     process.exit();
