@@ -5,15 +5,15 @@ const AuditLog = require('../models/AuditLog');
 // @access  Private (Admin only)
 exports.getAuditLogs = async (req, res, next) => {
   try {
-    const { limit = 10, page = 1 } = req.query;
-
-    const skip = (page - 1) * limit;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const skip = (pageNum - 1) * limitNum;
 
     const logs = await AuditLog.find()
       .populate('performedBy', 'name role email')
       .sort({ timestamp: -1 })
-      .skip(Number(skip))
-      .limit(Number(limit));
+      .skip(skip)
+      .limit(limitNum);
 
     const total = await AuditLog.countDocuments();
 
@@ -21,8 +21,8 @@ exports.getAuditLogs = async (req, res, next) => {
       success: true,
       count: logs.length,
       total,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
       data: logs
     });
   } catch (error) {

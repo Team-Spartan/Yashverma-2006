@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, ClipboardPlus, AlertTriangle, Users } from 'lucide-react';
+import { LayoutDashboard, FileText, ClipboardPlus, AlertTriangle, Users, ShieldAlert } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
 export default function Sidebar() {
@@ -15,6 +15,7 @@ export default function Sidebar() {
 
   if (user && user.role === 'admin') {
     links.push({ to: '/users', label: 'User Directory', icon: Users });
+    links.push({ to: '/audit', label: 'Audit Trail', icon: ShieldAlert });
   }
 
   return (
