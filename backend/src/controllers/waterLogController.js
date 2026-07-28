@@ -47,14 +47,21 @@ exports.getWaterLogs = async (req, res, next) => {
 
     // Date range filtering
     if (startDate || endDate) {
-      query.testDate = {};
-      if (startDate) {
-        query.testDate.$gte = new Date(startDate);
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        query.testDate.$lte = end;
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+      
+      const hasValidStart = start && !isNaN(start.getTime());
+      const hasValidEnd = end && !isNaN(end.getTime());
+
+      if (hasValidStart || hasValidEnd) {
+        query.testDate = {};
+        if (hasValidStart) {
+          query.testDate.$gte = start;
+        }
+        if (hasValidEnd) {
+          end.setHours(23, 59, 59, 999);
+          query.testDate.$lte = end;
+        }
       }
     }
 
