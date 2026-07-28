@@ -144,8 +144,10 @@ export default function UsersPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', alignItems: 'end' }}>
           {/* Query input */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label>Name or Email</label>
+            <label htmlFor="user-search-input">Name or Email</label>
             <input
+              id="user-search-input"
+              name="search"
               type="text"
               placeholder="Search by name, email..."
               className="form-input"
@@ -157,8 +159,10 @@ export default function UsersPage() {
 
           {/* Role select */}
           <div className="form-group" style={{ marginBottom: 0 }}>
-            <label>Role</label>
+            <label htmlFor="user-role-select">Role</label>
             <select
+              id="user-role-select"
+              name="role"
               className="form-input"
               value={roleFilter}
               onChange={handleRoleChange}
