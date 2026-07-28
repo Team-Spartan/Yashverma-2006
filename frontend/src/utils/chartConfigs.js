@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-  Fill
+  Filler
 } from 'chart.js';
 
 // Register Chart.js components
@@ -23,7 +23,7 @@ ChartJS.register(
   Tooltip,
   Legend,
   ArcElement,
-  Fill
+  Filler
 );
 
 export const defaultLineOptions = {

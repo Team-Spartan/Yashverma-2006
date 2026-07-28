@@ -18,7 +18,14 @@ export default function App() {
         <main className="page-wrapper">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
-            <Route path="/test-logs" element={<TestLogsPage />} />
+            <Route
+              path="/test-logs"
+              element={
+                <ProtectedRoute>
+                  <TestLogsPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/login" element={<LoginPage />} />
             <Route
               path="/log-test"

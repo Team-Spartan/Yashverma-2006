@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const waterLogRoutes = require('./routes/waterLogRoutes');
 const issueRoutes = require('./routes/issueRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/logs', waterLogRoutes);
 app.use('/api/v1/issues', issueRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/audit', auditRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

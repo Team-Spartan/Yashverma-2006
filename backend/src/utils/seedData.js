@@ -9,7 +9,7 @@ dotenv.config();
 
 const seedData = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jaldrishti_db');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jaldrishti_db');
     console.log('[Seed] Connected to MongoDB...');
 
     // Clear existing data
@@ -39,6 +39,17 @@ const seedData = async () => {
       district: 'Varanasi',
       state: 'Uttar Pradesh',
       phone: '+91 9876500112'
+    });
+
+    const adminUser = await User.create({
+      name: 'System Admin',
+      email: 'admin@jaldrishti.gov.in',
+      password: 'password123',
+      role: 'admin',
+      villageName: 'HQ Office',
+      district: 'Varanasi',
+      state: 'Uttar Pradesh',
+      phone: '+91 9999999999'
     });
 
     // Create sample water sources
