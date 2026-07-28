@@ -1,7 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const {
-  createTest, getTests, getTestById, updateTest, deleteTest, getTrends, getStats,
+  createTest, getTests, getTestById, updateTest, deleteTest, getTrends, getStats, compareVillages,
 } = require('../controllers/waterTestController');
 const auth = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
@@ -31,15 +31,16 @@ const testValidation = [
 router.use(auth);
 
 router.route('/')
-  .get(getTests)
+  .get(authorize('health_worker', 'official', 'admin'), getTests)
   .post(authorize('health_worker', 'official', 'admin'), testValidation, validate, createTest);
 
-router.get('/trends', getTrends);
-router.get('/stats', getStats);
+router.get('/trends', authorize('health_worker', 'official', 'admin'), getTrends);
+router.get('/stats', authorize('health_worker', 'official', 'admin'), getStats);
+router.get('/compare', authorize('health_worker', 'official', 'admin'), compareVillages);
 
 router.route('/:id')
-  .get(getTestById)
-  .put(authorize('health_worker', 'official', 'admin'), testValidation, validate, updateTest)
+  .get(authorize('health_worker', 'official', 'admin'), getTestById)
+  .put(authorize('health_worker', 'official', 'admin').owner('WaterTest'), testValidation, validate, updateTest)
   .delete(authorize('admin'), deleteTest);
 
 module.exports = router;

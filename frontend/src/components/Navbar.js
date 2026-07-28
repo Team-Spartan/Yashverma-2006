@@ -31,14 +31,24 @@ const Navbar = () => {
         <NavLink to="/issues" className={({ isActive }) => isActive ? 'active' : ''}>
           Issues
         </NavLink>
+        <NavLink to="/trends" className={({ isActive }) => isActive ? 'active' : ''}>
+          Trends
+        </NavLink>
         {(user?.role === 'admin' || user?.role === 'official') && (
-          <NavLink to="/admin" className={({ isActive }) => isActive ? 'active' : ''}>
-            Admin
-          </NavLink>
+          <>
+            <NavLink to="/admin" className={({ isActive }) => isActive ? 'active' : ''}>
+              Admin
+            </NavLink>
+            <NavLink to="/compare" className={({ isActive }) => isActive ? 'active' : ''}>
+              Compare
+            </NavLink>
+          </>
         )}
       </div>
       <div className="navbar-user">
-        <span>{user?.name}</span>
+        <NavLink to="/profile" className={({ isActive }) => isActive ? 'active user-link' : 'user-link'}>
+          {user?.name}
+        </NavLink>
         <button className="btn-logout" onClick={handleLogout}>Logout</button>
       </div>
     </nav>

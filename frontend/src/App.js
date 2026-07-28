@@ -8,6 +8,9 @@ import Dashboard from './pages/Dashboard';
 import WaterTests from './pages/WaterTests';
 import Issues from './pages/Issues';
 import AdminPanel from './pages/AdminPanel';
+import VillageComparison from './pages/VillageComparison';
+import WaterTrends from './pages/WaterTrends';
+import Profile from './pages/Profile';
 import './App.css';
 
 const PrivateRoute = ({ children, roles }) => {
@@ -38,6 +41,9 @@ function AppContent() {
           <Route path="/water-tests" element={<PrivateRoute><WaterTests /></PrivateRoute>} />
           <Route path="/issues" element={<PrivateRoute><Issues /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute roles={['admin', 'official']}><AdminPanel /></PrivateRoute>} />
+          <Route path="/compare" element={<PrivateRoute roles={['admin', 'official']}><VillageComparison /></PrivateRoute>} />
+          <Route path="/trends" element={<PrivateRoute><WaterTrends /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} />} />
         </Routes>
       </div>

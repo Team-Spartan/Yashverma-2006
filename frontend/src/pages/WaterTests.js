@@ -13,6 +13,7 @@ const WaterTests = () => {
   const [editingTest, setEditingTest] = useState(null);
   const [toast, setToast] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [recentlyUpdated, setRecentlyUpdated] = useState(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -54,6 +55,8 @@ const WaterTests = () => {
       setTests((prev) =>
         prev.map((t) => (t._id === editingTest._id ? res.data.test : t))
       );
+      setRecentlyUpdated(editingTest._id);
+      setTimeout(() => setRecentlyUpdated(null), 2000);
       setEditingTest(null);
       showToast('Test result updated successfully');
     } catch (err) {
@@ -68,7 +71,8 @@ const WaterTests = () => {
       setDeleteConfirm(null);
       showToast('Test result deleted');
     } catch (err) {
-      showToast('Failed to delete test', 'error');
+      const msg = err.response?.data?.message || 'Failed to delete test result';
+      showToast(msg, 'error');
     }
   };
 
@@ -132,7 +136,10 @@ const WaterTests = () => {
                 </thead>
                 <tbody>
                   {tests.map((test) => (
-                    <tr key={test._id}>
+                    <tr
+                      key={test._id}
+                      className={recentlyUpdated === test._id ? 'row-updated' : ''}
+                    >
                       <td>{new Date(test.testDate).toLocaleDateString()}</td>
                       <td>{test.sourceName}</td>
                       <td style={{ textTransform: 'capitalize' }}>{test.sourceType}</td>
@@ -152,7 +159,7 @@ const WaterTests = () => {
                         <div className="table-actions">
                           {canEdit(test) && (
                             <button
-                              className="btn-icon"
+                              className="btn-icon btn-edit"
                               title="Edit test result"
                               onClick={() => setEditingTest(test)}
                             >
@@ -228,7 +235,12 @@ const WaterTests = () => {
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setEditingTest(null)}>
           <div className="modal">
             <div className="modal-header">
-              <h2>Edit Water Quality Test</h2>
+              <div>
+                <h2>Edit Water Quality Test</h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                  {editingTest.sourceName} &middot; {new Date(editingTest.testDate).toLocaleDateString()}
+                </p>
+              </div>
               <button className="modal-close" onClick={() => setEditingTest(null)}>&times;</button>
             </div>
             <div className="modal-body">

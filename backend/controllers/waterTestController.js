@@ -84,17 +84,9 @@ exports.getTestById = async (req, res) => {
 
 exports.updateTest = async (req, res) => {
   try {
-    const test = await WaterTest.findById(req.params.id);
+    const test = req.resource || await WaterTest.findById(req.params.id);
     if (!test) {
       return res.status(404).json({ message: 'Test not found' });
-    }
-
-    if (
-      test.userId.toString() !== req.user._id.toString() &&
-      req.user.role !== 'admin' &&
-      req.user.role !== 'official'
-    ) {
-      return res.status(403).json({ message: 'Not authorized to update this test' });
     }
 
     const allowedFields = [
@@ -172,6 +164,84 @@ exports.getTrends = async (req, res) => {
     ]);
 
     res.json({ trends });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.compareVillages = async (req, res) => {
+  try {
+    const { villages, months = 12 } = req.query;
+
+    if (!villages) {
+      return res.status(400).json({ message: 'villages parameter is required' });
+    }
+
+    const villageList = villages.split(',').map((v) => v.trim()).filter(Boolean);
+
+    if (villageList.length === 0) {
+      return res.status(400).json({ message: 'At least one village is required' });
+    }
+
+    if (villageList.length > 5) {
+      return res.status(400).json({ message: 'Maximum 5 villages can be compared at once' });
+    }
+
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - parseInt(months));
+
+    const trends = await WaterTest.aggregate([
+      {
+        $match: {
+          village: { $in: villageList },
+          testDate: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            village: '$village',
+            year: { $year: '$testDate' },
+            month: { $month: '$testDate' },
+          },
+          avgPh: { $avg: '$ph' },
+          avgTurbidity: { $avg: '$turbidity' },
+          avgTds: { $avg: '$tds' },
+          avgChlorine: { $avg: '$chlorine' },
+          count: { $sum: 1 },
+          safeCount: {
+            $sum: { $cond: [{ $eq: ['$overallStatus', 'safe'] }, 1, 0] },
+          },
+          cautionCount: {
+            $sum: { $cond: [{ $eq: ['$overallStatus', 'caution'] }, 1, 0] },
+          },
+          unsafeCount: {
+            $sum: { $cond: [{ $eq: ['$overallStatus', 'unsafe'] }, 1, 0] },
+          },
+        },
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } },
+    ]);
+
+    const villageData = {};
+    villageList.forEach((v) => {
+      villageData[v] = trends
+        .filter((t) => t._id.village === v)
+        .map((t) => ({
+          year: t._id.year,
+          month: t._id.month,
+          avgPh: t.avgPh,
+          avgTurbidity: t.avgTurbidity,
+          avgTds: t.avgTds,
+          avgChlorine: t.avgChlorine,
+          count: t.count,
+          safeCount: t.safeCount,
+          cautionCount: t.cautionCount,
+          unsafeCount: t.unsafeCount,
+        }));
+    });
+
+    res.json({ villageData });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

@@ -25,12 +25,12 @@ const issueValidation = [
 router.use(auth);
 
 router.route('/')
-  .get(getIssues)
+  .get(authorize('health_worker', 'official', 'admin'), getIssues)
   .post(authorize('health_worker', 'official', 'admin'), issueValidation, validate, createIssue);
 
 router.route('/:id')
-  .get(getIssueById)
-  .put(authorize('health_worker', 'official', 'admin'), updateIssue)
+  .get(authorize('health_worker', 'official', 'admin'), getIssueById)
+  .put(authorize('health_worker', 'official', 'admin').owner('IssueReport'), updateIssue)
   .delete(authorize('admin'), deleteIssue);
 
 module.exports = router;

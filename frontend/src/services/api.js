@@ -32,6 +32,7 @@ export const authAPI = {
   login: (data) => api.post('/auth/login', data),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/me', data),
+  changePassword: (data) => api.put('/auth/change-password', data),
 };
 
 export const waterTestAPI = {
@@ -42,6 +43,7 @@ export const waterTestAPI = {
   delete: (id) => api.delete(`/water-tests/${id}`),
   getTrends: (params) => api.get('/water-tests/trends', { params }),
   getStats: (params) => api.get('/water-tests/stats', { params }),
+  compare: (params) => api.get('/water-tests/compare', { params }),
 };
 
 export const issueAPI = {
