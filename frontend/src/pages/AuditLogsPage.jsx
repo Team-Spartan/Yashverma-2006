@@ -180,12 +180,14 @@ export default function AuditLogsPage() {
           </p>
         </div>
         <button 
+          id="refresh-btn"
+          aria-label="Refresh"
           onClick={loadAuditLogs} 
           className="btn-primary" 
           disabled={loading}
           style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
         >
-          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh Ledger
+          <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
         </button>
       </div>
 
@@ -325,6 +327,7 @@ export default function AuditLogsPage() {
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <button
                 className="btn-primary"
+                aria-label="Previous Page"
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
                 style={{ 
@@ -334,10 +337,13 @@ export default function AuditLogsPage() {
                   cursor: page === 1 ? 'not-allowed' : 'pointer',
                   background: 'rgba(255, 255, 255, 0.05)',
                   border: '1px solid var(--border-color)',
-                  color: 'var(--text-main)'
+                  color: 'var(--text-main)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
                 }}
               >
-                <ChevronLeft size={14} /> Prev
+                <ChevronLeft size={14} /> Previous
               </button>
 
               {Array.from({ length: totalPages }, (_, idx) => idx + 1)
@@ -371,6 +377,7 @@ export default function AuditLogsPage() {
 
               <button
                 className="btn-primary"
+                aria-label="Next Page"
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page === totalPages}
                 style={{ 
@@ -380,7 +387,10 @@ export default function AuditLogsPage() {
                   cursor: page === totalPages ? 'not-allowed' : 'pointer',
                   background: 'rgba(255, 255, 255, 0.05)',
                   border: '1px solid var(--border-color)',
-                  color: 'var(--text-main)'
+                  color: 'var(--text-main)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem'
                 }}
               >
                 Next <ChevronRight size={14} />
