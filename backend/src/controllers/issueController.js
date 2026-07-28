@@ -36,45 +36,76 @@ exports.createIssue = async (req, res, next) => {
   try {
     const { waterSourceId, issueType, severity, description } = req.body;
 
+    const sourceIdVal = waterSourceId || req.body.waterSource;
+    const issueTypeVal = issueType || req.body.type;
+
     // Explicit field validation
-    if (!waterSourceId) {
-      return res.status(400).json({ success: false, error: 'Please provide a water source ID' });
+    if (!sourceIdVal) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please provide a water source ID',
+        error: 'Please provide a water source ID' 
+      });
     }
     
-    if (!mongoose.Types.ObjectId.isValid(waterSourceId)) {
-      return res.status(400).json({ success: false, error: 'Invalid water source ID format' });
+    if (!mongoose.Types.ObjectId.isValid(sourceIdVal)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid water source ID format',
+        error: 'Invalid water source ID format' 
+      });
     }
 
-    if (!issueType) {
-      return res.status(400).json({ success: false, error: 'Please specify the type of issue' });
+    if (!issueTypeVal) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please specify the type of issue',
+        error: 'Please specify the type of issue' 
+      });
     }
 
     const validIssueTypes = ['bad_odor', 'discoloration', 'pipe_leakage', 'contamination_outbreak', 'low_pressure', 'other'];
-    if (!validIssueTypes.includes(issueType)) {
-      return res.status(400).json({ success: false, error: 'Invalid issue type' });
+    if (!validIssueTypes.includes(issueTypeVal)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid issue type',
+        error: 'Invalid issue type' 
+      });
     }
 
     if (!description || description.trim() === '') {
-      return res.status(400).json({ success: false, error: 'Please describe the issue in detail' });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please describe the issue in detail',
+        error: 'Please describe the issue in detail' 
+      });
     }
 
     if (severity) {
       const validSeverities = ['low', 'medium', 'high', 'emergency'];
       if (!validSeverities.includes(severity)) {
-        return res.status(400).json({ success: false, error: 'Invalid severity level' });
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Invalid severity level',
+          error: 'Invalid severity level' 
+        });
       }
     }
 
-    const waterSource = await WaterSource.findById(waterSourceId);
+    const waterSource = await WaterSource.findById(sourceIdVal);
     if (!waterSource) {
-      return res.status(404).json({ success: false, error: 'Water source not found' });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Water source not found',
+        error: 'Water source not found' 
+      });
     }
 
     const issue = await IssueReport.create({
-      waterSource: waterSourceId,
+      waterSource: sourceIdVal,
       reportedBy: req.user._id,
       villageName: waterSource.villageName,
-      issueType,
+      issueType: issueTypeVal,
       severity: severity || 'medium',
       description: description.trim()
     });
