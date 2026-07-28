@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const WaterTestLog = require('../models/WaterTestLog');
 const WaterSource = require('../models/WaterSource');
 const { calculateWQI } = require('../utils/calculateWQI');
@@ -98,6 +99,10 @@ exports.createWaterLog = async (req, res, next) => {
   try {
     const { waterSourceId, ph, turbidity, tds, nitrates, fluoride, dissolvedOxygen, eColiPresent, remarks } = req.body;
 
+    if (!waterSourceId || !mongoose.Types.ObjectId.isValid(waterSourceId)) {
+      return res.status(404).json({ success: false, message: 'Water source not found' });
+    }
+
     const waterSource = await WaterSource.findById(waterSourceId);
     if (!waterSource) {
       return res.status(404).json({ success: false, message: 'Water source not found' });
@@ -171,7 +176,12 @@ exports.updateWaterLog = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Log record not found' });
     }
 
-    const waterSource = await WaterSource.findById(waterSourceId || log.waterSource._id);
+    const sourceIdVal = waterSourceId || (log.waterSource ? log.waterSource._id : null);
+    if (!sourceIdVal || !mongoose.Types.ObjectId.isValid(sourceIdVal)) {
+      return res.status(404).json({ success: false, message: 'Water source not found' });
+    }
+
+    const waterSource = await WaterSource.findById(sourceIdVal);
     if (!waterSource) {
       return res.status(404).json({ success: false, message: 'Water source not found' });
     }
@@ -257,11 +267,11 @@ exports.updateWaterLog = async (req, res, next) => {
 
     await AuditLog.create({
       action: 'EDIT',
-      performedBy: req.user._id,
+      performedBy: req.user._id || req.user.id || req.user,
       targetType: 'WaterTestLog',
       targetId: log._id,
-      villageName: waterSource.villageName,
-      waterSourceName: waterSource.name,
+      villageName: waterSource.villageName || log.villageName || 'Unknown Village',
+      waterSourceName: waterSource.name || (log.waterSource ? log.waterSource.name : 'Unknown Source') || 'Unknown Source',
       changes: {
         before: originalParameters,
         after: {
@@ -319,16 +329,16 @@ exports.deleteWaterLog = async (req, res, next) => {
     const AuditLog = require('../models/AuditLog');
     await AuditLog.create({
       action: 'DELETE',
-      performedBy: req.user._id,
+      performedBy: req.user._id || req.user.id || req.user,
       targetType: 'WaterTestLog',
       targetId: req.params.id,
-      villageName,
-      waterSourceName,
+      villageName: villageName || 'Unknown Village',
+      waterSourceName: waterSourceName || 'Unknown Source',
       changes: {
         before: originalParameters,
         after: null
       },
-      description: `Deleted water quality entry (WQI: ${originalParameters.calculatedWQI}, Status: ${originalParameters.qualityStatus})`
+      description: `Deleted water quality entry (WQI: ${originalParameters.calculatedWQI || 'N/A'}, Status: ${originalParameters.qualityStatus || 'N/A'})`
     });
 
     res.status(200).json({
