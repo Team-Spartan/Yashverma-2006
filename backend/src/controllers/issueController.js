@@ -64,8 +64,9 @@ exports.createIssue = async (req, res, next) => {
       });
     }
 
+    const issueTypeValLower = issueTypeVal.toString().toLowerCase().trim();
     const validIssueTypes = ['bad_odor', 'discoloration', 'pipe_leakage', 'contamination_outbreak', 'low_pressure', 'other'];
-    if (!validIssueTypes.includes(issueTypeVal)) {
+    if (!validIssueTypes.includes(issueTypeValLower)) {
       return res.status(400).json({ 
         success: false, 
         message: 'Invalid issue type',
@@ -73,7 +74,7 @@ exports.createIssue = async (req, res, next) => {
       });
     }
 
-    if (!description || description.trim() === '') {
+    if (!description || description.toString().trim() === '') {
       return res.status(400).json({ 
         success: false, 
         message: 'Please describe the issue in detail',
@@ -81,15 +82,14 @@ exports.createIssue = async (req, res, next) => {
       });
     }
 
-    if (severity) {
-      const validSeverities = ['low', 'medium', 'high', 'emergency'];
-      if (!validSeverities.includes(severity)) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Invalid severity level',
-          error: 'Invalid severity level' 
-        });
-      }
+    const severityVal = severity ? severity.toString().toLowerCase().trim() : 'medium';
+    const validSeverities = ['low', 'medium', 'high', 'emergency'];
+    if (severity && !validSeverities.includes(severityVal)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid severity level',
+        error: 'Invalid severity level' 
+      });
     }
 
     const waterSource = await WaterSource.findById(sourceIdVal);
@@ -104,10 +104,10 @@ exports.createIssue = async (req, res, next) => {
     const issue = await IssueReport.create({
       waterSource: sourceIdVal,
       reportedBy: req.user._id,
-      villageName: waterSource.villageName,
-      issueType: issueTypeVal,
-      severity: severity || 'medium',
-      description: description.trim()
+      villageName: waterSource.villageName || req.body.villageName || req.user.villageName || 'Unknown Village',
+      issueType: issueTypeValLower,
+      severity: severityVal,
+      description: description.toString().trim()
     });
 
     res.status(201).json({
