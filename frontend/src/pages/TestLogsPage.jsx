@@ -5,7 +5,7 @@ import { FileText, RefreshCw, ChevronLeft, ChevronRight, Filter, X } from 'lucid
 import { AuthContext } from '../context/AuthContext';
 
 export default function TestLogsPage() {
-  const { user } = useContext(AuthContext);
+  const { user, loading: authLoading } = useContext(AuthContext);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -65,19 +65,21 @@ export default function TestLogsPage() {
 
   // Set default village filter for village representatives
   useEffect(() => {
-    if (user && user.role === 'village_rep') {
+    if (!authLoading && user && user.role === 'village_rep') {
       setVillageFilter(user.villageName);
       setAppliedFilters(prev => ({
         ...prev,
         villageName: user.villageName
       }));
     }
-  }, [user]);
+  }, [user, authLoading]);
 
-  // Re-fetch logs when applied filters change
+  // Re-fetch logs when applied filters change or authentication finishes loading
   useEffect(() => {
-    loadTestLogs();
-  }, [appliedFilters]);
+    if (!authLoading) {
+      loadTestLogs();
+    }
+  }, [appliedFilters, authLoading]);
 
   // Apply filters trigger
   const handleApplyFilters = (e) => {
@@ -161,14 +163,7 @@ export default function TestLogsPage() {
               className="form-input"
               value={villageFilter}
               onChange={(e) => setVillageFilter(e.target.value)}
-              disabled={user && user.role === 'village_rep'}
-              style={{ 
-                padding: '0.5rem 0.75rem', 
-                fontSize: '0.875rem',
-                opacity: user && user.role === 'village_rep' ? 0.75 : 1,
-                cursor: user && user.role === 'village_rep' ? 'not-allowed' : 'text'
-              }}
-              title={user && user.role === 'village_rep' ? `Locked to your community: ${user.villageName}` : ''}
+              style={{ padding: '0.5rem 0.75rem', fontSize: '0.875rem' }}
             />
           </div>
 

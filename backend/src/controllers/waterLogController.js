@@ -10,11 +10,38 @@ exports.getWaterLogs = async (req, res, next) => {
     const { villageName, sourceId, qualityStatus, startDate, endDate, limit = 20, page = 1 } = req.query;
 
     const query = {};
+    
+    // Scoping for village representatives
     if (req.user && req.user.role === 'village_rep') {
       query.villageName = req.user.villageName;
-    } else if (villageName) {
-      query.villageName = { $regex: villageName, $options: 'i' };
     }
+
+    if (villageName) {
+      // Find water sources matching by name regex
+      const matchingSources = await WaterSource.find({
+        name: { $regex: villageName, $options: 'i' }
+      }).select('_id');
+      const sourceIds = matchingSources.map(s => s._id);
+
+      const locationFilter = {
+        $or: [
+          { villageName: { $regex: villageName, $options: 'i' } },
+          { waterSource: { $in: sourceIds } }
+        ]
+      };
+
+      if (query.villageName) {
+        // Compound query to restrict to user's community AND match search query
+        query.$and = [
+          { villageName: query.villageName },
+          locationFilter
+        ];
+        delete query.villageName;
+      } else {
+        query.$or = locationFilter.$or;
+      }
+    }
+
     if (sourceId) query.waterSource = sourceId;
     if (qualityStatus) query.qualityStatus = qualityStatus;
 
@@ -31,14 +58,16 @@ exports.getWaterLogs = async (req, res, next) => {
       }
     }
 
-    const skip = (page - 1) * limit;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 20);
+    const skip = (pageNum - 1) * limitNum;
 
     const logs = await WaterTestLog.find(query)
       .populate('waterSource', 'name sourceType locationCoordinates')
       .populate('testedBy', 'name role email')
       .sort({ testDate: -1 })
-      .skip(Number(skip))
-      .limit(Number(limit));
+      .skip(skip)
+      .limit(limitNum);
 
     const total = await WaterTestLog.countDocuments(query);
 
@@ -46,8 +75,8 @@ exports.getWaterLogs = async (req, res, next) => {
       success: true,
       count: logs.length,
       total,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
       data: logs
     });
   } catch (error) {
