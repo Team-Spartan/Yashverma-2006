@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, ClipboardPlus, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, FileText, ClipboardPlus, AlertTriangle, Users } from 'lucide-react';
+import { AuthContext } from '../../context/AuthContext';
 
 export default function Sidebar() {
+  const { user } = useContext(AuthContext);
+
   const links = [
     { to: '/', label: 'Overview Dashboard', icon: LayoutDashboard },
     { to: '/test-logs', label: 'Test Records Table', icon: FileText },
     { to: '/log-test', label: 'Log Water Test', icon: ClipboardPlus },
     { to: '/issues', label: 'Reported Issues', icon: AlertTriangle },
   ];
+
+  if (user && user.role === 'admin') {
+    links.push({ to: '/users', label: 'User Directory', icon: Users });
+  }
 
   return (
     <aside style={{ width: 260, background: 'rgba(11, 19, 43, 0.95)', borderRight: '1px solid var(--border-color)', padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

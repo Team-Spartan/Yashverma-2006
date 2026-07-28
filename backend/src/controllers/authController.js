@@ -93,3 +93,50 @@ exports.getMe = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Get all users (Admin only)
+// @route   GET /api/v1/auth/users
+// @access  Private (Admin)
+exports.getUsers = async (req, res, next) => {
+  try {
+    const { role, search, page = 1, limit = 10 } = req.query;
+
+    const query = {};
+
+    // Filter by role
+    if (role) {
+      query.role = role;
+    }
+
+    // Search by name or email
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const skip = (pageNum - 1) * limitNum;
+
+    const users = await User.find(query)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
+      data: users
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -7,6 +7,7 @@ import TestLogsPage from './pages/TestLogsPage';
 import LogTestPage from './pages/LogTestPage';
 import IssuesPage from './pages/IssuesPage';
 import LoginPage from './pages/LoginPage';
+import UsersPage from './pages/UsersPage';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
 export default function App() {
@@ -40,6 +41,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <IssuesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <UsersPage />
                 </ProtectedRoute>
               }
             />

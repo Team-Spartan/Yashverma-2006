@@ -14,3 +14,8 @@ export const getCurrentUser = async () => {
   const response = await api.get('/auth/me');
   return response.data;
 };
+
+export const fetchUsers = async (params = {}) => {
+  const response = await api.get('/auth/users', { params });
+  return response.data;
+};
