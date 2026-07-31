@@ -1,4 +1,5 @@
 import axios from 'axios';
+<<<<<<< HEAD
 import { sampleVillages, sampleLogs, sampleIssues, sampleTrends } = './sampleData';
 
 const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5050/api';
@@ -198,4 +199,26 @@ export const waterQualityAPI = {
   }
 };
 
+=======
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Interceptor to attach Authorization Bearer token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+>>>>>>> dev-ankit
 export default api;
