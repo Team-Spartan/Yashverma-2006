@@ -1,10 +1,12 @@
-node_modules
-dist
+node_modules/
+frontend/build/
+dist/
 .env
 *.log
 uploads/*
 !uploads/.gitkeep
-coverage
-.prisma
+coverage/
+.prisma/
 .DS_Store
 Thumbs.db
+frontend/node_modules/.cache/

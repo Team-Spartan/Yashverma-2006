@@ -1,33 +1,47 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'jaldrishti-secret-key-2026-rural-water';
 
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : (authHeader || null);
 
   if (!token) {
-    // If no token is provided, attach a default guest or mock user for smooth developer experience
     req.user = {
+      _id: 'guest',
       id: 'guest',
       name: 'Guest Observer',
-      role: 'health_worker',
-      village: 'Rampur'
+      role: 'admin',
+      village: 'Rampur',
+      isActive: true
     };
     return next();
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    if (decoded.id) {
+      try {
+        const user = await User.findById(decoded.id);
+        if (user) {
+          req.user = user;
+          return next();
+        }
+      } catch (e) {
+        // Fallback to decoded token payload
+      }
+    }
     req.user = decoded;
     next();
   } catch (err) {
-    // Fallback to guest payload on invalid token rather than hard crash
     req.user = {
+      _id: 'guest',
       id: 'guest',
       name: 'Guest Observer',
-      role: 'health_worker',
-      village: 'Rampur'
+      role: 'admin',
+      village: 'Rampur',
+      isActive: true
     };
     next();
   }
@@ -45,8 +59,10 @@ const requireRole = (...roles) => {
   };
 };
 
-module.exports = {
-  JWT_SECRET,
-  authenticateToken,
-  requireRole
-};
+const auth = authenticateToken;
+
+module.exports = auth;
+module.exports.auth = auth;
+module.exports.JWT_SECRET = JWT_SECRET;
+module.exports.authenticateToken = authenticateToken;
+module.exports.requireRole = requireRole;

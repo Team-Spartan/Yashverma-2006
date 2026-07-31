@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+<<<<<<< HEAD
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { calculateWQI } = require('./utils/wqiCalculator');
@@ -8,10 +9,24 @@ const { JWT_SECRET, authenticateToken, requireRole } = require('./middleware/aut
 
 const app = express();
 const PORT = process.env.PORT || 5050;
+=======
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
+
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/auth');
+const waterTestRoutes = require('./routes/waterTests');
+const issueRoutes = require('./routes/issues');
+const adminRoutes = require('./routes/admin');
+
+const app = express();
+
+connectDB();
+>>>>>>> dev-rohit
 
 app.use(cors());
 app.use(express.json());
 
+<<<<<<< HEAD
 // In-Memory Database collections (pre-seeded for out-of-the-box operation)
 let users = [...sampleUsers];
 let waterLogs = [...sampleLogs];
@@ -724,4 +739,23 @@ app.listen(PORT, () => {
   console.log(` JalDrishti Rural Water Quality API Server Ready`);
   console.log(` Running on port: http://localhost:${PORT}`);
   console.log(`=======================================================`);
+=======
+app.use('/api/auth', authRoutes);
+app.use('/api/water-tests', waterTestRoutes);
+app.use('/api/issues', issueRoutes);
+app.use('/api/admin', adminRoutes);
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal server error' });
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`AquaWatch server running on port ${PORT}`);
+>>>>>>> dev-rohit
 });
