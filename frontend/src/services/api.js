@@ -1,8 +1,7 @@
 import axios from 'axios';
-<<<<<<< HEAD
-import { sampleVillages, sampleLogs, sampleIssues, sampleTrends } = './sampleData';
+import { sampleVillages, sampleLogs, sampleIssues, sampleTrends } from '../data/sampleData';
 
-const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5050/api';
+const API_BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,7 +9,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('jaldrishti_token') || localStorage.getItem('aquawatch_token');
+  const token = localStorage.getItem('token') || localStorage.getItem('jaldrishti_token') || localStorage.getItem('aquawatch_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -21,6 +20,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      localStorage.removeItem('token');
       localStorage.removeItem('jaldrishti_token');
       localStorage.removeItem('aquawatch_token');
     }
@@ -199,26 +199,5 @@ export const waterQualityAPI = {
   }
 };
 
-=======
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
-
-// Interceptor to attach Authorization Bearer token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
->>>>>>> dev-ankit
+export { api };
 export default api;

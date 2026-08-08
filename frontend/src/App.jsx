@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './context/AuthContext';
-import { useLanguage } from './context/LanguageContext';
+import { useAuth } from './context/AuthContext.jsx';
+import { useLanguage } from './context/LanguageContext.jsx';
 import { api } from './services/api';
-import { Navbar } from './components/Navbar';
-import { Sidebar } from './components/Sidebar';
-import { OverviewDashboard } from './components/OverviewDashboard';
-import { WaterLogsTable } from './components/WaterLogsTable';
-import { WaterLogModal } from './components/WaterLogModal';
-import { IssueReportList } from './components/IssueReportList';
-import { IssueReportModal } from './components/IssueReportModal';
-import { TrendVisualization } from './components/TrendVisualization';
-import { AdminDashboard } from './components/AdminDashboard';
-import { BrandView } from './components/BrandView';
-import { AuthModal } from './components/AuthModal';
-import { NotificationsHistory } from './components/NotificationsHistory';
+import { Navbar } from './components/Navbar.jsx';
+import { Sidebar } from './components/Sidebar.jsx';
+import { OverviewDashboard } from './components/OverviewDashboard.jsx';
+import { WaterLogsTable } from './components/WaterLogsTable.jsx';
+import { WaterLogModal } from './components/WaterLogModal.jsx';
+import { IssueReportList } from './components/IssueReportList.jsx';
+import { IssueReportModal } from './components/IssueReportModal.jsx';
+import { TrendVisualization } from './components/TrendVisualization.jsx';
+import { AdminDashboard } from './components/AdminDashboard.jsx';
+import { BrandView } from './components/BrandView.jsx';
+import { AuthModal } from './components/AuthModal.jsx';
+import { NotificationsHistory } from './components/NotificationsHistory.jsx';
 
 export function App() {
   const { user } = useAuth();

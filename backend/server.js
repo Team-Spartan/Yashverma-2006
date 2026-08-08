@@ -1,45 +1,52 @@
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
-<<<<<<< HEAD
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { calculateWQI } = require('./utils/wqiCalculator');
 const { sampleVillages, sampleUsers, sampleLogs, sampleIssues, sampleTrends } = require('./utils/seedData');
 const { JWT_SECRET, authenticateToken, requireRole } = require('./middleware/auth');
 
+let connectDB;
+try {
+  connectDB = require('./config/db');
+  connectDB().catch(err => {
+    console.log('Note: Local MongoDB not connected. JalDrishti API is operating in standalone mock/in-memory mode.');
+  });
+} catch (e) {
+  console.log('Note: Standalone mock mode active.');
+}
+
 const app = express();
 const PORT = process.env.PORT || 5050;
-=======
-require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
-
-const connectDB = require('./config/db');
-const authRoutes = require('./routes/auth');
-const waterTestRoutes = require('./routes/waterTests');
-const issueRoutes = require('./routes/issues');
-const adminRoutes = require('./routes/admin');
-
-const app = express();
-
-connectDB();
->>>>>>> dev-rohit
 
 app.use(cors());
 app.use(express.json());
 
-<<<<<<< HEAD
+// Try mounting modular routes if MongoDB models work
+try {
+  const authRoutes = require('./routes/auth');
+  const waterTestRoutes = require('./routes/waterTests');
+  const issueRoutes = require('./routes/issues');
+  const adminRoutes = require('./routes/admin');
+  app.use('/api/auth-v2', authRoutes);
+  app.use('/api/water-tests-v2', waterTestRoutes);
+  app.use('/api/issues-v2', issueRoutes);
+  app.use('/api/admin-v2', adminRoutes);
+} catch (e) {
+  console.log('Modular routes initialization info:', e.message);
+}
+
 // In-Memory Database collections (pre-seeded for out-of-the-box operation)
 let users = [...sampleUsers];
 let waterLogs = [...sampleLogs];
 let issueReports = [...sampleIssues];
 let villages = [...sampleVillages];
 
-// Helper to generate IDs
 const generateId = (prefix) => `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-// Notifications storage
 let notifications = [];
 
-// Helper to create notification
 const createNotification = (userId, issueId, issueTitle, oldStatus, newStatus, customMessage) => {
   const notification = {
     id: generateId('notif'),
@@ -60,7 +67,6 @@ const createNotification = (userId, issueId, issueTitle, oldStatus, newStatus, c
 // 1. AUTHENTICATION ENDPOINTS
 // -------------------------------------------------------------
 
-// Login endpoint
 app.post('/api/auth/login', (req, res) => {
   const { email, password } = req.body;
   if (!email) {
@@ -97,11 +103,9 @@ app.post('/api/auth/login', (req, res) => {
   });
 });
 
-// Register endpoint
 app.post('/api/auth/register', async (req, res) => {
   const { name, email, password, role, village, district, phone } = req.body;
 
-  // Validate required fields
   const errors = {};
   if (!name || name.trim().length < 2) {
     errors.name = 'Name must be at least 2 characters';
@@ -161,7 +165,6 @@ app.post('/api/auth/register', async (req, res) => {
   });
 });
 
-// Get Current User Profile
 app.get('/api/auth/me', authenticateToken, (req, res) => {
   res.json({ success: true, user: req.user });
 });
@@ -170,8 +173,7 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
 // 2. WATER QUALITY LOGS (CRUD)
 // -------------------------------------------------------------
 
-// GET all logs (with village & safetyStatus filters)
-app.get('/api/water-logs', (req, res) => {
+app.get(['/api/water-logs', '/api/logs'], (req, res) => {
   const { village, safetyStatus, search } = req.query;
   let filtered = [...waterLogs];
 
@@ -190,7 +192,6 @@ app.get('/api/water-logs', (req, res) => {
     );
   }
 
-  // Sort latest first
   filtered.sort((a, b) => new Date(b.testedDate) - new Date(a.testedDate));
 
   res.json({
@@ -200,8 +201,7 @@ app.get('/api/water-logs', (req, res) => {
   });
 });
 
-// GET single log by ID
-app.get('/api/water-logs/:id', (req, res) => {
+app.get(['/api/water-logs/:id', '/api/logs/:id'], (req, res) => {
   const log = waterLogs.find(l => l.id === req.params.id);
   if (!log) {
     return res.status(404).json({ success: false, message: 'Water test log not found' });
@@ -209,8 +209,7 @@ app.get('/api/water-logs/:id', (req, res) => {
   res.json({ success: true, data: log });
 });
 
-// POST Create new Water Quality Log
-app.post('/api/water-logs', authenticateToken, (req, res) => {
+app.post(['/api/water-logs', '/api/logs'], authenticateToken, (req, res) => {
   const {
     village,
     district,
@@ -232,7 +231,6 @@ app.post('/api/water-logs', authenticateToken, (req, res) => {
     return res.status(400).json({ success: false, message: 'Source name, pH, and TDS are required' });
   }
 
-  // Calculate WQI and Safety Status automatically using BIS standards
   const evaluation = calculateWQI({
     pH: parseFloat(pH),
     tds: parseFloat(tds),
@@ -264,13 +262,11 @@ app.post('/api/water-logs', authenticateToken, (req, res) => {
 
   waterLogs.unshift(newLog);
 
-  // Update village summary counters
   const v = villages.find(vil => vil.name.toLowerCase() === newLog.village.toLowerCase());
   if (v) {
     if (newLog.safetyStatus === 'Hazardous') v.activeAlerts += 1;
   }
 
-  // Notify admins if hazardous water detected
   if (newLog.safetyStatus === 'Hazardous' || newLog.safetyStatus === 'Warning') {
     users.filter(u => u.role === 'admin').forEach(admin => {
       createNotification(
@@ -292,8 +288,7 @@ app.post('/api/water-logs', authenticateToken, (req, res) => {
   });
 });
 
-// PUT Update Water Log
-app.put('/api/water-logs/:id', authenticateToken, (req, res) => {
+app.put(['/api/water-logs/:id', '/api/logs/:id'], authenticateToken, (req, res) => {
   const index = waterLogs.findIndex(l => l.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ success: false, message: 'Water test log not found' });
@@ -302,7 +297,6 @@ app.put('/api/water-logs/:id', authenticateToken, (req, res) => {
   const existing = waterLogs[index];
   const updatedData = { ...existing, ...req.body };
 
-  // Recalculate WQI
   const evaluation = calculateWQI({
     pH: parseFloat(updatedData.pH),
     tds: parseFloat(updatedData.tds),
@@ -324,8 +318,7 @@ app.put('/api/water-logs/:id', authenticateToken, (req, res) => {
   });
 });
 
-// DELETE Water Log
-app.delete('/api/water-logs/:id', authenticateToken, (req, res) => {
+app.delete(['/api/water-logs/:id', '/api/logs/:id'], authenticateToken, (req, res) => {
   const initialLen = waterLogs.length;
   waterLogs = waterLogs.filter(l => l.id !== req.params.id);
 
@@ -340,7 +333,6 @@ app.delete('/api/water-logs/:id', authenticateToken, (req, res) => {
 // 3. ISSUE REPORTING (CRUD)
 // -------------------------------------------------------------
 
-// GET All Issues (with pagination)
 app.get('/api/issues', (req, res) => {
   const { village, status, severity, page = '1', limit = '6' } = req.query;
   let filtered = [...issueReports];
@@ -375,7 +367,6 @@ app.get('/api/issues', (req, res) => {
   });
 });
 
-// POST Create Issue Report
 app.post('/api/issues', authenticateToken, (req, res) => {
   const { title, description, village, district, locationDetails, issueType, severity } = req.body;
   if (!title || !description) {
@@ -416,7 +407,6 @@ app.post('/api/issues', authenticateToken, (req, res) => {
   });
 });
 
-// PUT Update Issue Status / Assignee (Admin & Health Worker)
 app.put('/api/issues/:id', authenticateToken, (req, res) => {
   const index = issueReports.findIndex(i => i.id === req.params.id);
   if (index === -1) {
@@ -438,37 +428,19 @@ app.put('/api/issues/:id', authenticateToken, (req, res) => {
 
   issueReports[index] = existing;
 
-  // Trigger notification on status change
   if (status && status !== oldStatus) {
     const reporter = users.find(u => u.name === existing.reportedBy);
     const userId = reporter ? reporter.id : req.user.id;
     createNotification(userId, existing.id, existing.title, oldStatus, status);
   }
 
-  // Trigger notification on assignment change (notify assignee)
-  if (assignedTo && assignedTo !== existing.assignedTo) {
-    const assigneeUser = users.find(u => u.name === assignedTo);
-    if (assigneeUser) {
-      createNotification(
-        assigneeUser.id,
-        existing.id,
-        existing.title,
-        null,
-        existing.status,
-        `Issue "${existing.title}" assigned to you (${assignedTo}). Current status: ${existing.status}.`
-      );
-    }
-  }
-
   res.json({
     success: true,
     message: 'Issue report status updated',
-    data: existing,
-    notification: status && status !== oldStatus ? { triggered: true } : { triggered: false }
+    data: existing
   });
 });
 
-// DELETE Issue Report
 app.delete('/api/issues/:id', authenticateToken, (req, res) => {
   const initialLen = issueReports.length;
   issueReports = issueReports.filter(i => i.id !== req.params.id);
@@ -484,7 +456,6 @@ app.delete('/api/issues/:id', authenticateToken, (req, res) => {
 // 4. NOTIFICATIONS
 // -------------------------------------------------------------
 
-// GET Notifications for current user
 app.get('/api/notifications', authenticateToken, (req, res) => {
   const { unreadOnly } = req.query;
   let filtered = notifications.filter(n => n.userId === req.user.id);
@@ -500,7 +471,6 @@ app.get('/api/notifications', authenticateToken, (req, res) => {
   });
 });
 
-// PUT Mark notification as read
 app.put('/api/notifications/:id/read', authenticateToken, (req, res) => {
   const notif = notifications.find(n => n.id === req.params.id);
   if (!notif) {
@@ -510,7 +480,6 @@ app.put('/api/notifications/:id/read', authenticateToken, (req, res) => {
   res.json({ success: true, message: 'Notification marked as read', data: notif });
 });
 
-// PUT Mark all notifications as read (user-scoped)
 app.put('/api/notifications/read-all', authenticateToken, (req, res) => {
   let count = 0;
   notifications.forEach(n => {
@@ -522,7 +491,6 @@ app.put('/api/notifications/read-all', authenticateToken, (req, res) => {
   res.json({ success: true, message: `${count} notifications marked as read`, count });
 });
 
-// DELETE Remove a notification
 app.delete('/api/notifications/:id', authenticateToken, (req, res) => {
   const index = notifications.findIndex(n => n.id === req.params.id);
   if (index === -1) {
@@ -536,12 +504,10 @@ app.delete('/api/notifications/:id', authenticateToken, (req, res) => {
 // 5. VILLAGES & DASHBOARD STATS
 // -------------------------------------------------------------
 
-// GET Villages
 app.get('/api/villages', (req, res) => {
   res.json({ success: true, count: villages.length, data: villages });
 });
 
-// GET Dashboard Metrics Summary
 app.get('/api/stats/dashboard', (req, res) => {
   const totalLogs = waterLogs.length;
   const safeCount = waterLogs.filter(l => l.safetyStatus === 'Safe').length;
@@ -572,7 +538,6 @@ app.get('/api/stats/dashboard', (req, res) => {
   });
 });
 
-// GET Users List (Admin)
 app.get('/api/users', (req, res) => {
   res.json({
     success: true,
@@ -581,7 +546,6 @@ app.get('/api/users', (req, res) => {
   });
 });
 
-// GET System Activity Stats for Admin Dashboard Charts (raw dump)
 app.get('/api/stats/activity', (req, res) => {
   res.json({
     success: true,
@@ -596,8 +560,6 @@ app.get('/api/stats/activity', (req, res) => {
   });
 });
 
-// GET Aggregated Activity Stats for Chart.js (grouped by day/week with range filter)
-// Query params: range=7days|30days|allTime  granularity=daily|weekly
 app.get('/api/admin/activity-stats', (req, res) => {
   const { range = '30days', granularity = 'daily' } = req.query;
 
@@ -618,28 +580,24 @@ app.get('/api/admin/activity-stats', (req, res) => {
     dateLabels.push(dateStr);
   }
 
-  // Aggregate User Signups (by registeredDate)
   users.forEach(u => {
     const regDate = u.registeredDate || '';
     const cleanDate = regDate.split('T')[0];
     if (dateMap[cleanDate]) dateMap[cleanDate].signups += 1;
   });
 
-  // Aggregate Water Quality Entries (by testedDate)
   waterLogs.forEach(l => {
     const tDate = l.testedDate || '';
     const cleanDate = tDate.split('T')[0];
     if (dateMap[cleanDate]) dateMap[cleanDate].logs += 1;
   });
 
-  // Aggregate Issue Reports (by reportedDate)
   issueReports.forEach(is => {
     const rDate = is.reportedDate || '';
     const cleanDate = rDate.split('T')[0];
     if (dateMap[cleanDate]) dateMap[cleanDate].issues += 1;
   });
 
-  // Format display labels (e.g., "Jul 15")
   const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const formattedLabels = dateLabels.map(d => {
     const parts = d.split('-');
@@ -676,7 +634,6 @@ app.get('/api/admin/activity-stats', (req, res) => {
     submissions = formattedLabels.map((l, i) => ({ label: l, value: logsData[i] + issuesData[i] }));
   }
 
-  // Role distribution
   const roleCounts = {};
   users.forEach(u => {
     const r = u.role || 'viewer';
@@ -707,7 +664,6 @@ app.get('/api/admin/activity-stats', (req, res) => {
   res.json({ success: true, data: result });
 });
 
-// GET Trends Data for Chart.js
 app.get('/api/stats/trends', (req, res) => {
   res.json({
     success: true,
@@ -715,7 +671,6 @@ app.get('/api/stats/trends', (req, res) => {
   });
 });
 
-// POST Data Reset / Re-seed
 app.post('/api/seed', (req, res) => {
   users = [...sampleUsers];
   waterLogs = [...sampleLogs];
@@ -724,7 +679,6 @@ app.post('/api/seed', (req, res) => {
   res.json({ success: true, message: 'Database reset to initial JalDrishti dataset.' });
 });
 
-// Health check
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
@@ -734,28 +688,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ success: false, message: 'Internal server error' });
+});
+
 app.listen(PORT, () => {
   console.log(`=======================================================`);
   console.log(` JalDrishti Rural Water Quality API Server Ready`);
   console.log(` Running on port: http://localhost:${PORT}`);
   console.log(`=======================================================`);
-=======
-app.use('/api/auth', authRoutes);
-app.use('/api/water-tests', waterTestRoutes);
-app.use('/api/issues', issueRoutes);
-app.use('/api/admin', adminRoutes);
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Internal server error' });
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`AquaWatch server running on port ${PORT}`);
->>>>>>> dev-rohit
 });
