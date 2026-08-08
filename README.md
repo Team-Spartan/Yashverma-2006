@@ -31,7 +31,7 @@
 
 | Team Member | Role & Responsibilities | Status |
 | :--- | :--- | :--- |
-| **Yash Verma** | Team Leader & Full-Stack Architect | ✅ 5/5 Stories Complete |
+| **Yash Verma 👑** | Team Leader & Full-Stack Architect | ✅ 5/5 Stories Complete |
 | **Ankit Kumar** | Frontend & Chart.js Specialist | ✅ 5/5 Stories Complete |
 | **Nitish Kumar** | Backend & API Engineer | ✅ 5/5 Stories Complete |
 | **Rohit kumar keshri** | System Design & QA Engineer | ✅ 5/5 Stories Complete |
