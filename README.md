@@ -9,9 +9,9 @@
 
 ---
 
-## 🌐 Live Application Link
+## 🌐 Live Application
 
-> **Online Web App**: https://jaldrishti-water.vercel.app
+🚀 **[Visit JalDrishti Live →](https://jaldrishti-water.vercel.app)**
 
 ---
 
