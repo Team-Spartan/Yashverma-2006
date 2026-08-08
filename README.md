@@ -11,9 +11,7 @@
 
 ## 🌐 Live Application Link
 
-> **Online Web App**: [https://jaldrishti-rural-water.vercel.app](https://jaldrishti-rural-water.vercel.app) *(Deploy link)*  
-> **Local Live Server**: `http://localhost:3000`  
-> **Backend API Health**: `http://localhost:5000/api/health`  
+> **Online Web App**: https://jaldrishti-water.vercel.app
 
 ---
 
@@ -33,53 +31,11 @@
 
 | Team Member | Role & Responsibilities | Status |
 | :--- | :--- | :--- |
-| **Yash Sharma** | Team Leader & Full-Stack Architect | ✅ 5/5 Stories Complete |
+| **Yash Verma** | Team Leader & Full-Stack Architect | ✅ 5/5 Stories Complete |
 | **Ankit Kumar** | Frontend & Chart.js Specialist | ✅ 5/5 Stories Complete |
-| **Nitish Singh** | Backend & API Engineer | ✅ 5/5 Stories Complete |
-| **Rohit Verma** | System Design & QA Engineer | ✅ 5/5 Stories Complete |
+| **Nitish Kumar** | Backend & API Engineer | ✅ 5/5 Stories Complete |
+| **Rohit kumar keshri** | System Design & QA Engineer | ✅ 5/5 Stories Complete |
 
 ---
 
-## ⚡ Quick Start (How to Run Locally)
-
-### Option 1: 1-Click Execution (Windows)
-Simply double-click **`start.bat`** in the project root folder. It automatically launches both Backend (Port 5000) and Frontend (Port 3000).
-
-### Option 2: Command Line Setup
-
-```bash
-# 1. Clone repository
-git clone https://github.com/YourUsername/Yashverma-2006.git
-cd Yashverma-2006
-
-# 2. Start Backend API Server
-cd backend
-npm install
-node server.js
-
-# 3. Start Frontend UI (in a new terminal tab)
-cd frontend
-npm install
-npx vite
-```
-
----
-
-## ☁️ How to Deploy Online (Free 24/7 Live URL)
-
-### 1. Deploy Frontend on Vercel
-1. Go to [Vercel.com](https://vercel.com) and sign in with GitHub.
-2. Click **Add New Project** and select your `Yashverma-2006` repository.
-3. Set **Root Directory** to `frontend`.
-4. Click **Deploy**! Vercel gives you a permanent `https://...vercel.app` URL.
-
-### 2. Deploy Backend on Render
-1. Go to [Render.com](https://render.com) and create a **Web Service**.
-2. Connect your GitHub repository and set **Root Directory** to `backend`.
-3. Set **Build Command**: `npm install` and **Start Command**: `node server.js`.
-4. Click **Create Web Service**.
-
----
-
-## 📜 License
 This project is licensed under the [MIT License](LICENSE).
